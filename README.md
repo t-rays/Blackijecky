@@ -14,7 +14,6 @@ A complete implementation of a networked Blackjack game with UDP server discover
 - [Protocol Specification](#protocol-specification)
 - [Code Structure](#code-structure)
 - [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 
