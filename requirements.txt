@@ -1,0 +1,17 @@
+# Blackjack Client-Server Application
+# Python 3.7+ required
+
+# Standard library only - no external dependencies required
+# All functionality uses Python's built-in libraries:
+# - socket
+# - struct
+# - threading
+# - http.server
+# - json
+# - queue
+# - urllib.parse
+
+# For testing (optional):
+# - unittest (built-in)
+# - requests (optional, for some web tests)
+

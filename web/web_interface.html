@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack - Web Interface</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🃏 Blackjack Game</h1>
+            <p class="subtitle">Web Interface for Blackjack Server</p>
+        </header>
+
+        <!-- Connection Panel -->
+        <div id="connection-panel" class="panel">
+            <h2>Connect to Server</h2>
+            <div class="form-group">
+                <label for="client-name">Your Name:</label>
+                <input type="text" id="client-name" value="WebPlayer" maxlength="32">
+            </div>
+            <div class="form-group">
+                <label for="num-rounds">Number of Rounds:</label>
+                <input type="number" id="num-rounds" value="1" min="1" max="255">
+            </div>
+            <button id="discover-btn" class="btn btn-primary">Discover Server</button>
+            <div id="discover-status" class="status"></div>
+        </div>
+
+        <!-- Game Panel -->
+        <div id="game-panel" class="panel hidden">
+            <div class="game-header">
+                <h2>Round <span id="round-number">1</span> / <span id="total-rounds">1</span></h2>
+                <div class="stats">
+                    <span>Wins: <strong id="wins-count">0</strong></span>
+                    <span>Losses: <strong id="losses-count">0</strong></span>
+                    <span>Ties: <strong id="ties-count">0</strong></span>
+                </div>
+            </div>
+
+            <!-- Dealer Section -->
+            <div class="dealer-section">
+                <h3>Dealer</h3>
+                <div class="hand" id="dealer-hand">
+                    <div class="hand-placeholder">Waiting for cards...</div>
+                </div>
+                <div class="total">Total: <span id="dealer-total">0</span></div>
+            </div>
+
+            <!-- Player Section -->
+            <div class="player-section">
+                <h3>You</h3>
+                <div class="hand" id="player-hand">
+                    <div class="hand-placeholder">Waiting for cards...</div>
+                </div>
+                <div class="total">Total: <span id="player-total">0</span></div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <button id="hit-btn" class="btn btn-action" disabled>Hit</button>
+                <button id="stand-btn" class="btn btn-action" disabled>Stand</button>
+                <button id="new-game-btn" class="btn btn-secondary hidden">New Game</button>
+            </div>
+
+            <!-- Game Status -->
+            <div id="game-status" class="status"></div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="overlay hidden">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
+
