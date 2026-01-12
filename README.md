@@ -365,52 +365,6 @@ python3 src/blackjack_client.py
 python3 src/blackjack_client.py
 ```
 
-### Cross-Team Testing
-
-The protocol is designed for full interoperability:
-- Your client should work with any team's server
-- Your server should work with any team's client
-- Test with at least 2-3 different team implementations
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Issue: "Address already in use" error**
-```
-Solution: Another process is using the port. 
-- Kill the existing process or wait
-- Server uses random port, shouldn't happen
-- Client needs SO_REUSEPORT for multiple instances
-```
-
-**Issue: Client doesn't receive offers**
-```
-Solution:
-- Check firewall settings
-- Ensure server is broadcasting
-- Verify both on same network
-- Check UDP port 13122 is not blocked
-```
-
-**Issue: Connection timeout**
-```
-Solution:
-- Verify server IP is reachable (ping)
-- Check TCP port in offer message
-- Ensure server is accepting connections
-- Check timeout value (default 30s)
-```
-
-**Issue: Invalid message errors**
-```
-Solution:
-- Verify magic cookie (0xabcddcba)
-- Check message type codes
-- Ensure proper byte ordering (network order)
-- Use struct.pack/unpack correctly
-```
-
 ### Debug Mode
 
 Add verbose logging by uncommenting debug prints or adding:
