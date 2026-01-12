@@ -416,46 +416,6 @@ Both client and server track:
 - Win rate percentage
 - Per-session and overall statistics
 
-## 🏆 Excellence Criteria
-
-To achieve top grades:
-- ✅ Works with any client/server implementation
-- ✅ High-quality, well-commented code
-- ✅ Proper error handling and timeouts
-- ✅ Clean code structure and organization
-- ✅ No busy-waiting (efficient CPU usage)
-- ✅ Regular Git commits by all team members
-- ✅ Comprehensive testing
-
-## 📝 Code Quality
-
-### Naming Conventions
-- Classes: `PascalCase`
-- Functions: `snake_case`
-- Constants: `UPPER_SNAKE_CASE`
-- Private methods: `_leading_underscore`
-
-### Documentation
-- Module docstrings explain purpose
-- Class docstrings describe functionality
-- Function docstrings include Args/Returns
-- Inline comments explain complex logic
-
-### Error Handling
-- All network operations wrapped in try/except
-- Timeouts on all socket operations
-- Validation of all received messages
-- Graceful degradation on errors
-
-## 🤝 Contributing
-
-When working in a team:
-1. Use Git branches for features
-2. Write descriptive commit messages
-3. Review each other's code
-4. Test thoroughly before committing
-5. All members should contribute commits
-
 ## 📄 License
 
 This project is created for educational purposes as part of the Intro to Computer Networks 2025 course.
