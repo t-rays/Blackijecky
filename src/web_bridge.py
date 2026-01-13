@@ -42,6 +42,27 @@ RESULT_WIN = 0x3
 SUITS = ['♥', '♦', '♣', '♠']
 RANK_NAMES = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
+BUST_THRESHOLD = 21
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def calculate_hand_value_from_dicts(hand: list) -> int:
+    """
+    Calculate the total value of a hand from card dictionaries.
+    For simplicity, Aces are valued as 1 (as allowed by forum Q&A).
+    
+    Args:
+        hand: List of card dictionaries with 'rank' and 'value' keys
+        
+    Returns:
+        Total value of the hand
+    """
+    # For simplicity, just sum the values (Ace value is already set to 1 in card.get_value())
+    return sum(card.get('value', 0) for card in hand)
+
 
 # ============================================================================
 # GAME SESSION MANAGER
@@ -144,10 +165,6 @@ class GameSession:
                         'display': f"{RANK_NAMES[card.rank]}{SUITS[card.suit]}"
                     }
                 
-                # Check if this is a final result message (WIN/LOSS/TIE with no card)
-                # Detect this BEFORE processing to ensure we queue it correctly
-                is_final_result = result in [RESULT_WIN, RESULT_LOSS, RESULT_TIE] and not card_info
-                
                 # Update state
                 with self.lock:
                     # Check if we're starting a new round (finished state + new cards arriving)
@@ -163,7 +180,19 @@ class GameSession:
                         self.round_result = None
                         self.game_state = "playing"
                     
-                    if card_info:
+                    # Determine if this is a final result card (random card sent with final result)
+                    # vs a bust card (RESULT_LOSS during player's turn)
+                    # Final results after dealer's turn have random cards that shouldn't be added
+                    # But bust cards during player's turn should be added
+                    is_final_result_card = (
+                        result in [RESULT_WIN, RESULT_LOSS, RESULT_TIE] and 
+                        self.game_state in ["dealer_turn", "finished"]
+                    )
+                    
+                    # Only add cards to hands if it's NOT a final result card
+                    # Final results after dealer plays include a random card for message structure
+                    # But bust cards during player's turn are real game cards that should be added
+                    if card_info and not is_final_result_card:
                         # Determine which hand gets the card based on hand sizes and game state
                         # Initial deal: 2 player cards, then 1 dealer card
                         player_count = len(self.player_hand)
@@ -193,9 +222,9 @@ class GameSession:
                                 # Shouldn't happen, but default to player
                                 self.player_hand.append(card_info)
                         
-                        # Recalculate totals
-                        self.player_total = sum(c.get('value', 0) for c in self.player_hand)
-                        self.dealer_total = sum(c.get('value', 0) for c in self.dealer_hand)
+                        # Recalculate totals (with flexible Ace handling)
+                        self.player_total = calculate_hand_value_from_dicts(self.player_hand)
+                        self.dealer_total = calculate_hand_value_from_dicts(self.dealer_hand)
                     
                     # Update game state based on result and hand sizes
                     if result == RESULT_LOSS:
