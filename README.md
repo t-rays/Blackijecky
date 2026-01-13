@@ -2,6 +2,9 @@
 
 **Intro to Computer Networks 2025 Hackathon**
 
+<img width="1670" height="950" alt="image" src="https://github.com/user-attachments/assets/db59a4f5-6d89-42ac-9058-641827de6938" />
+<img width="997" height="952" alt="image" src="https://github.com/user-attachments/assets/370155c5-a409-4d6c-bdba-ae538334cebe" />
+
 A complete implementation of a networked Blackjack game with UDP server discovery and TCP game sessions.
 
 ## 📋 Table of Contents
