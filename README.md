@@ -14,7 +14,6 @@ A complete implementation of a networked Blackjack game with UDP server discover
 - [Protocol Specification](#protocol-specification)
 - [Code Structure](#code-structure)
 - [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 
@@ -365,52 +364,6 @@ python3 src/blackjack_client.py
 python3 src/blackjack_client.py
 ```
 
-### Cross-Team Testing
-
-The protocol is designed for full interoperability:
-- Your client should work with any team's server
-- Your server should work with any team's client
-- Test with at least 2-3 different team implementations
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Issue: "Address already in use" error**
-```
-Solution: Another process is using the port. 
-- Kill the existing process or wait
-- Server uses random port, shouldn't happen
-- Client needs SO_REUSEPORT for multiple instances
-```
-
-**Issue: Client doesn't receive offers**
-```
-Solution:
-- Check firewall settings
-- Ensure server is broadcasting
-- Verify both on same network
-- Check UDP port 13122 is not blocked
-```
-
-**Issue: Connection timeout**
-```
-Solution:
-- Verify server IP is reachable (ping)
-- Check TCP port in offer message
-- Ensure server is accepting connections
-- Check timeout value (default 30s)
-```
-
-**Issue: Invalid message errors**
-```
-Solution:
-- Verify magic cookie (0xabcddcba)
-- Check message type codes
-- Ensure proper byte ordering (network order)
-- Use struct.pack/unpack correctly
-```
-
 ### Debug Mode
 
 Add verbose logging by uncommenting debug prints or adding:
@@ -462,46 +415,6 @@ Both client and server track:
 - Wins, losses, and ties
 - Win rate percentage
 - Per-session and overall statistics
-
-## 🏆 Excellence Criteria
-
-To achieve top grades:
-- ✅ Works with any client/server implementation
-- ✅ High-quality, well-commented code
-- ✅ Proper error handling and timeouts
-- ✅ Clean code structure and organization
-- ✅ No busy-waiting (efficient CPU usage)
-- ✅ Regular Git commits by all team members
-- ✅ Comprehensive testing
-
-## 📝 Code Quality
-
-### Naming Conventions
-- Classes: `PascalCase`
-- Functions: `snake_case`
-- Constants: `UPPER_SNAKE_CASE`
-- Private methods: `_leading_underscore`
-
-### Documentation
-- Module docstrings explain purpose
-- Class docstrings describe functionality
-- Function docstrings include Args/Returns
-- Inline comments explain complex logic
-
-### Error Handling
-- All network operations wrapped in try/except
-- Timeouts on all socket operations
-- Validation of all received messages
-- Graceful degradation on errors
-
-## 🤝 Contributing
-
-When working in a team:
-1. Use Git branches for features
-2. Write descriptive commit messages
-3. Review each other's code
-4. Test thoroughly before committing
-5. All members should contribute commits
 
 ## 📄 License
 
