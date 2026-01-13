@@ -12,6 +12,8 @@ import struct
 import threading
 import time
 import random
+import sys
+import argparse
 from typing import List, Tuple, Optional
 from tcp_utils import recv_exact
 
@@ -70,12 +72,13 @@ class Card:
     def get_value(self) -> int:
         """
         Get the blackjack value of the card.
+        For simplicity, Aces are valued as 1 (as allowed by forum Q&A).
         
         Returns:
-            Card value (Ace=11, Face cards=10, others=rank)
+            Card value (Ace=1, Face cards=10, others=rank)
         """
         if self.rank == 1:  # Ace
-            return 11
+            return 1
         elif self.rank >= 11:  # Jack, Queen, King
             return 10
         else:
@@ -140,6 +143,7 @@ class BlackjackGame:
     def calculate_hand_value(self, hand: List[Card]) -> int:
         """
         Calculate the total value of a hand.
+        For simplicity, Aces are valued as 1 (as allowed by forum Q&A).
         
         Args:
             hand: List of Card objects
@@ -541,12 +545,16 @@ class BlackjackServer:
                     
                     if is_bust:
                         print(f"Player BUSTS with {new_total}!")
+                        # Reveal dealer's hidden card even when player busts (for transparency)
+                        print(f"\nDealer reveals hidden card: {game.dealer_hand[1]} (Total: {game.dealer_total})")
+                        client_socket.sendall(create_payload_message(RESULT_NOT_OVER, game.dealer_hand[1]))
+                        # Send the bust card with loss result
                         client_socket.sendall(create_payload_message(RESULT_LOSS, new_card))
                         return RESULT_LOSS
                     else:
                         client_socket.sendall(create_payload_message(RESULT_NOT_OVER, new_card))
             
-            # Dealer's turn
+            # Dealer's turn (only reached if player didn't bust)
             print(f"\nDealer reveals hidden card: {game.dealer_hand[1]} (Total: {game.dealer_total})")
             client_socket.sendall(create_payload_message(RESULT_NOT_OVER, game.dealer_hand[1]))
             
@@ -565,8 +573,13 @@ class BlackjackServer:
             result = game.determine_winner()
             print(f"Final: Player {game.player_total} vs Dealer {game.dealer_total}")
             
-            # Send final result
-            client_socket.sendall(create_payload_message(result, None))
+            # Send final result with a random card (to maintain fixed message structure)
+            random_card = game.deck.draw()
+            if not random_card:
+                # If deck is empty, reshuffle and draw
+                game.deck.reset()
+                random_card = game.deck.draw()
+            client_socket.sendall(create_payload_message(result, random_card))
             
             return result
         
@@ -589,7 +602,24 @@ class BlackjackServer:
 
 def main():
     """Main entry point for the server application."""
-    server = BlackjackServer(SERVER_NAME)
+    parser = argparse.ArgumentParser(description='Blackjack Server')
+    parser.add_argument('--name', '-n', type=str, default=None,
+                        help='Server name (will prompt if not provided)')
+    args = parser.parse_args()
+    
+    # Get server name from argument, prompt, or use default
+    server_name = args.name
+    if not server_name:
+        try:
+            server_name = input(f"Enter server name (default: {SERVER_NAME}): ").strip()
+            if not server_name:
+                server_name = SERVER_NAME
+        except (EOFError, KeyboardInterrupt):
+            server_name = SERVER_NAME
+            print(f"\nUsing default server name: {server_name}")
+    
+    print(f"Starting server with name: {server_name}")
+    server = BlackjackServer(server_name)
     
     try:
         server.start()

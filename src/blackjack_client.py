@@ -11,6 +11,7 @@ import socket
 import struct
 import sys
 import time
+import argparse
 from typing import Optional, Tuple, List
 from tcp_utils import recv_exact
 
@@ -67,12 +68,13 @@ class Card:
     def get_value(self) -> int:
         """
         Get the blackjack value of the card.
+        For simplicity, Aces are valued as 1 (as allowed by forum Q&A).
         
         Returns:
-            Card value (Ace=11, Face cards=10, others=rank)
+            Card value (Ace=1, Face cards=10, others=rank)
         """
         if self.rank == 1:  # Ace
-            return 11
+            return 1
         elif self.rank >= 11:  # Jack, Queen, King
             return 10
         else:
@@ -203,6 +205,19 @@ def parse_payload_message(data: bytes) -> Optional[Tuple[int, Optional[Card]]]:
 # ============================================================================
 # CLIENT GAME LOGIC
 # ============================================================================
+
+def calculate_hand_value(hand: List[Card]) -> int:
+    """
+    Calculate the total value of a hand.
+    For simplicity, Aces are valued as 1 (as allowed by forum Q&A).
+    
+    Args:
+        hand: List of Card objects
+        
+    Returns:
+        Total value of the hand
+    """
+    return sum(card.get_value() for card in hand)
 
 class BlackjackClient:
     """Main client class that discovers servers and plays games."""
@@ -372,8 +387,8 @@ class BlackjackClient:
                         dealer_hand.append(card)
                         print(f"Dealer's visible card: {card}")
             
-            # Calculate player's total
-            player_total = sum(card.get_value() for card in player_hand)
+            # Calculate player's total (with flexible Ace handling)
+            player_total = calculate_hand_value(player_hand)
             print(f"Your total: {player_total}")
             
             # Player's turn - use simple strategy
@@ -404,7 +419,7 @@ class BlackjackClient:
                     # Busted
                     if card:
                         player_hand.append(card)
-                        player_total = sum(c.get_value() for c in player_hand)
+                        player_total = calculate_hand_value(player_hand)
                         print(f"Drew: {card}")
                         print(f"Your total: {player_total}")
                         print(f"BUST! You went over 21.")
@@ -412,7 +427,7 @@ class BlackjackClient:
                 
                 if card:
                     player_hand.append(card)
-                    player_total = sum(c.get_value() for c in player_hand)
+                    player_total = calculate_hand_value(player_hand)
                     print(f"Drew: {card}")
                     print(f"Your total: {player_total}")
             
@@ -424,7 +439,7 @@ class BlackjackClient:
             
             # Receive dealer's cards
             print(f"\nDealer's turn:")
-            dealer_total = dealer_hand[0].get_value()
+            dealer_total = calculate_hand_value(dealer_hand)
             
             while True:
                 # Receive dealer card (exactly 9 bytes)
@@ -447,7 +462,7 @@ class BlackjackClient:
                 
                 if card:
                     dealer_hand.append(card)
-                    dealer_total = sum(c.get_value() for c in dealer_hand)
+                    dealer_total = calculate_hand_value(dealer_hand)
                     print(f"Dealer draws: {card} (Total: {dealer_total})")
                     
                     if dealer_total > BUST_THRESHOLD:
@@ -549,7 +564,23 @@ class BlackjackClient:
 
 def main():
     """Main entry point for the client application."""
-    client = BlackjackClient(CLIENT_NAME)
+    parser = argparse.ArgumentParser(description='Blackjack Client')
+    parser.add_argument('--name', '-n', type=str, default=None,
+                        help='Client name (will prompt if not provided)')
+    args = parser.parse_args()
+    
+    # Get client name from argument, prompt, or use default
+    client_name = args.name
+    if not client_name:
+        try:
+            client_name = input(f"Enter client name (default: {CLIENT_NAME}): ").strip()
+            if not client_name:
+                client_name = CLIENT_NAME
+        except (EOFError, KeyboardInterrupt):
+            client_name = CLIENT_NAME
+            print(f"\nUsing default client name: {client_name}")
+    
+    client = BlackjackClient(client_name)
     client.run_forever()
 
 

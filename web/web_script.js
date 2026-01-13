@@ -288,6 +288,10 @@ function handleGameEvent(data) {
             } else {
                 // More rounds to play
                 handleRoundEnd(roundResult);
+                // Hide summary before next round starts
+                roundEndMessageTimeout = setTimeout(() => {
+                    hideRoundSummary();
+                }, 3000);
             }
             // Don't close SSE connection - keep it open for multiple rounds
             // The connection will close when all rounds are complete or on error
@@ -436,6 +440,9 @@ function handleRoundEnd(result) {
         statusClass = 'warning';
     }
     
+    // Show round summary with all cards
+    showRoundSummary(result);
+    
     // Set flag to prevent status updates from overwriting the message
     roundEndMessageShown = true;
     
@@ -450,6 +457,9 @@ function handleRoundEnd(result) {
     if (gameState.currentRound < gameState.totalRounds) {
         roundEndMessageTimeout = setTimeout(() => {
             roundEndMessageShown = false;
+            
+            // Hide summary before processing new round events
+            hideRoundSummary();
             
             // Process any buffered events from the new round
             console.log(`Processing ${eventBuffer.length} buffered events`);
@@ -489,7 +499,11 @@ function handleRoundEnd(result) {
                 handleGameEvent(bufferedEvent);
             }
             
-            showGameComplete();
+            // Keep summary visible for final round, but hide it when showing game complete
+            setTimeout(() => {
+                hideRoundSummary();
+                showGameComplete();
+            }, 2000);
         }, 3000);
     }
 }
@@ -498,6 +512,9 @@ function handleRoundEnd(result) {
 async function startNextRound() {
     // Clear the round end message flag so status updates can happen again
     roundEndMessageShown = false;
+    
+    // Hide round summary
+    hideRoundSummary();
     
     // Don't increment currentRound here - it's already updated from SSE events
     // Just reset hands (they're already reset by the server, but ensure UI is clean)
@@ -529,6 +546,59 @@ function showGameComplete() {
     newGameBtn.classList.remove('hidden');
 }
 
+// Show Round Summary
+function showRoundSummary(result) {
+    const summaryEl = document.getElementById('round-summary');
+    const playerCardsEl = document.getElementById('summary-player-cards');
+    const dealerCardsEl = document.getElementById('summary-dealer-cards');
+    const playerTotalEl = document.getElementById('summary-player-total');
+    const dealerTotalEl = document.getElementById('summary-dealer-total');
+    const resultEl = document.getElementById('summary-result');
+    
+    if (!summaryEl) return;
+    
+    // Clear previous cards
+    playerCardsEl.innerHTML = '';
+    dealerCardsEl.innerHTML = '';
+    
+    // Show all player cards
+    gameState.playerHand.forEach(card => {
+        const cardEl = createCardElement(card);
+        playerCardsEl.appendChild(cardEl);
+    });
+    
+    // Show all dealer cards (they're all visible now)
+    gameState.dealerHand.forEach(card => {
+        const cardEl = createCardElement(card);
+        dealerCardsEl.appendChild(cardEl);
+    });
+    
+    // Update totals
+    playerTotalEl.textContent = gameState.playerTotal;
+    dealerTotalEl.textContent = gameState.dealerTotal;
+    
+    // Update result
+    resultEl.className = 'summary-result ' + result.toLowerCase();
+    if (result === 'WIN') {
+        resultEl.textContent = '🎉 You WIN!';
+    } else if (result === 'LOSS') {
+        resultEl.textContent = '💔 You LOSE';
+    } else {
+        resultEl.textContent = '🤝 It\'s a TIE!';
+    }
+    
+    // Show summary
+    summaryEl.classList.remove('hidden');
+}
+
+// Hide Round Summary
+function hideRoundSummary() {
+    const summaryEl = document.getElementById('round-summary');
+    if (summaryEl) {
+        summaryEl.classList.add('hidden');
+    }
+}
+
 // Reset Game
 function resetGame() {
     // Close SSE connection
@@ -556,6 +626,9 @@ function resetGame() {
     newGameBtn.classList.add('hidden');
     discoverStatus.textContent = '';
     discoverStatus.className = 'status';
+    
+    // Hide summary
+    hideRoundSummary();
 }
 
 // Update UI
